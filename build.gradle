@@ -1,0 +1,141 @@
+//
+// And so it begins...
+//
+buildscript {
+    ext.kotlin_version = '1.1.3'
+    repositories {
+//        maven {
+//            url "${repositoryUrl}/remote-repos"
+//        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootGradlePluginVersion}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+    }
+}
+
+apply plugin: "idea"
+apply plugin: "kotlin"
+apply plugin: "kotlin-spring"
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+configure(rootProject) {
+    group = 'online.harrigan'
+    version = projectVersion
+    description = 'reactive'
+}
+
+defaultTasks 'build'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint']
+[compileJava, compileTestJava]*.options*.incremental = true
+[compileJava]*.options*.compilerArgs = ['-parameters']
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+repositories {
+    //maven { url "${repositoryUrl}/remote-repos" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    mavenCentral()
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, "seconds"
+}
+
+configurations {
+    compile.exclude group: 'org.apache.tomcat', module: 'tomcat-jdbc'
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+    main.java.srcDirs += 'src/main/java'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.projectreactor:reactor-bom:${reactorVersion}"
+    }
+}
+
+dependencies {
+
+    // if you re-enable the line below and comment out "spring-boot-starter-webflux", it works
+    // compile('org.springframework.boot:spring-boot-starter-web')
+
+    // if you enable this line, and comment out the "spring-boot-starter-web", it fails
+    compile('org.springframework.boot:spring-boot-starter-webflux')
+
+    compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+
+    compile("org.springframework.security:spring-security-web:${springSecurityVersion}")
+
+    compile("io.projectreactor:reactor-core")
+    compile("io.projectreactor:reactor-kotlin-extensions:1.0.0.M2")
+
+    compile("com.zaxxer:HikariCP:${hikariCpVersion}")
+    compile("org.postgresql:postgresql:${postgresqlVersion}")
+
+    compile("org.slf4j:slf4j-api:${slf4jVersion}")
+    compile("ch.qos.logback:logback-core:${logbackVersion}")
+    compile("ch.qos.logback:logback-classic:${logbackVersion}")
+
+    compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+    compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+    compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-guava:${jacksonVersion}")
+    compile("com.fasterxml.jackson.module:jackson-module-afterburner:${jacksonVersion}")
+    compile("com.fasterxml.jackson.module:jackson-module-parameter-names:${jacksonVersion}")
+    compile("com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}")
+
+    compile("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version")
+
+    compile("commons-io:commons-io:${commonsIoVersion}")
+    compile("org.apache.commons:commons-lang3:${commonsLangVersion}")
+    compile("org.apache.commons:commons-text:${commonsTextVersion}")
+
+    compile("org.eclipse.collections:eclipse-collections-api:${eclipseCollectionsVersion}")
+    compile("org.eclipse.collections:eclipse-collections:${eclipseCollectionsVersion}")
+
+    compile("com.google.guava:guava:${guavaVersion}")
+    compile("org.thymeleaf:thymeleaf-spring5:3.0.7-SNAPSHOT")
+
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testCompile("org.mockito:mockito-core:${mockitoVersion}")
+    testCompile("org.assertj:assertj-core:${assertJVersion}")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+    project {
+        vcs = "Git"
+        languageLevel = '1.8'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0'
+}
